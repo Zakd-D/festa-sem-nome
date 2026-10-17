@@ -32,10 +32,15 @@ app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // log curto e legível
-app.use((req, _res, next) => {
-  if (!req.path.startsWith('/vendor') && !req.path.match(/\.(css|js|svg|png|jpg|webp|woff2?)$/)) {
-    console.log(`[${new Date().toISOString().slice(11, 19)}] ${req.method} ${req.path}`);
-  }
+app.use((req, res, next) => {
+  const skip = req.path.startsWith('/vendor') || /\.(css|js|svg|png|jpg|jpeg|webp|woff2?)$/.test(req.path);
+  if (skip) return next();
+  const t0 = Date.now();
+  res.on('finish', () => {
+    const ip = (req.ip || '').replace('::ffff:', '');
+    const local = ip === '127.0.0.1' || ip === '::1' ? 'local' : ip;
+    console.log(`[${new Date().toISOString().slice(11, 19)}] ${res.statusCode} ${req.method} ${req.path} <- ${local} (${Date.now() - t0}ms)`);
+  });
   next();
 });
 
@@ -138,7 +143,7 @@ const EVENTS = [
 ];
 
 const SITE = {
-  brand: 'Festa sem Nome',
+  brand: 'FSN',
   claim: 'Uma festa sem nome, num bar que ainda não tem nome.',
   instagram: 'https://instagram.com/',
   contact: 'contato@festasemnome.com',

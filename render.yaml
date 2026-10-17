@@ -17,8 +17,9 @@ services:
         value: production
       - key: HOST
         value: 0.0.0.0
-      - key: PORT
-        value: 3018
+      # NÃO definir PORT: o Render injeta a porta dele e o health check bate nela.
+      # Com PORT=3018 fixo aqui, o app sobe em 3018 mas o Render procura na porta
+      # dele -> "Deploy failed" depois de esgotar as tentativas do health check.
     # ATENÇÃO: no plano free não existe disco persistente.
     # Sem disco, data/lista.json é apagado a cada deploy/reinício.
     # Para guardar a lista de convidados de verdade, use um plano pago

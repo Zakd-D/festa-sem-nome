@@ -1,6 +1,6 @@
 # FESTA SEM NOME — site
 
-Site de eventos da Festa sem Nome. Cada edição tem um **poster 3D generativo** próprio,
+Site de eventos da FSN (Festa sem Nome). Cada edição tem um **poster 3D generativo** próprio,
 feito em shader — a arte não escreve o nome: o nome e a descrição misteriosa ficam na interface.
 
 **Stack:** Node.js + Express (servidor) · three.js (3D) · HTML/CSS/JS puro no frontend (sem build).

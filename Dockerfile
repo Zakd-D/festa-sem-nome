@@ -5,7 +5,8 @@ FROM node:22-alpine
 ENV NODE_ENV=production
 # no contêiner o servidor PRECISA escutar em 0.0.0.0
 ENV HOST=0.0.0.0
-ENV PORT=3018
+# PORT NÃO entra aqui: o Render injeta a porta em runtime (ele sobrescreve) e o
+# health check aponta para ela. Localmente, docker-compose.yml passa PORT=3018.
 
 WORKDIR /app
 
@@ -26,6 +27,6 @@ VOLUME ["/app/data"]
 EXPOSE 3018
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- "http://127.0.0.1:${PORT}/api/health" || exit 1
+  CMD wget -qO- "http://127.0.0.1:${PORT:-3018}/api/health" || exit 1
 
 CMD ["node", "server.js"]
