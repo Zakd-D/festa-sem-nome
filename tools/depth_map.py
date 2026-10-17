@@ -70,9 +70,14 @@ def make_normal(depth, strength=2.4):
 
 def main():
     slug = sys.argv[1]
-    src = os.path.join(POSTERS, f"{slug}.png")
-    if not os.path.exists(src):
-        print(f"no existe {src}")
+    src = None
+    for ext in (".png", ".jpg", ".jpeg", ".webp"):
+        cand = os.path.join(POSTERS, f"{slug}{ext}")
+        if os.path.exists(cand):
+            src = cand
+            break
+    if not src:
+        print(f"no existe poster para {slug} en {POSTERS}")
         return 1
 
     im, rgb = load(src)

@@ -56,7 +56,12 @@ const EVENTS = [
     id: 'rawmorphic',
     title: 'RAWMORPHIC',
     subtitle: 'Edição 01',
-    scene: 'rawmorphic',
+    scene: 'poster-rawmorphic',
+    poster: {
+      color: '/assets/posters/rawmorphic.jpg',
+      depth: '/assets/posters/rawmorphic-depth.png',
+      generated: 'Blender Cycles (01_cromo_gotico) + mapa de profundidade'
+    },
     isoDate: '2026-11-18T18:00:00-03:00',
     dateLabel: 'Qua, 18 de novembro de 2026',
     timeLabel: '18h às 3h',
