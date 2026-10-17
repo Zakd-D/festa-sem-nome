@@ -1,0 +1,30 @@
+# Deploy no Render (render.com) — plano gratuito
+# 1) suba este repo ao GitHub (já está: github.com/Zakd-D/festa-sem-nome)
+# 2) Render → New → Blueprint → escolha o repositório → Apply
+# O Render lê este arquivo e cria o serviço sozinho.
+
+services:
+  - type: web
+    name: festa-sem-nome
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon          # troque por 'ohio' ou 'virginia' se preferir
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 3018
+    # ATENÇÃO: no plano free não existe disco persistente.
+    # Sem disco, data/lista.json é apagado a cada deploy/reinício.
+    # Para guardar a lista de convidados de verdade, use um plano pago
+    # e descomente o bloco abaixo:
+    #
+    # disk:
+    #   name: dados-lista
+    #   mountPath: /app/data
+    #   sizeGB: 1

@@ -1,0 +1,16 @@
+# Rodar local com Docker (opcional):
+#   docker compose up --build      → http://localhost:3018
+services:
+  festa:
+    build: .
+    container_name: festa-sem-nome
+    ports:
+      - "3018:3018"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3018
+    volumes:
+      # guarda data/lista.json fora do contêiner
+      - ./data:/app/data
+    restart: unless-stopped

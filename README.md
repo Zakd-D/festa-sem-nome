@@ -14,7 +14,12 @@ festa-sem-nome/
 ├── server.js              ← arquivo principal do servidor
 ├── package.json
 ├── install.bat            ← instala tudo (Windows)
-├── run.bat                ← roda a aplicação (Windows)
+├── run.bat                ← roda a aplicação (Windows, Wi-Fi + Tailscale)
+├── compartilhar.bat       ← libera a porta 3018 no firewall (pede admin)
+├── Dockerfile             ← imagem de produção
+├── docker-compose.yml     ← rodar local com Docker
+├── render.yaml            ← deploy no Render (blueprint)
+├── Procfile               ← deploy Railway/Heroku
 ├── README.md
 ├── .gitignore
 ├── data/                  ← criado sozinho: lista de convidados (fora do git)
@@ -126,6 +131,52 @@ curl -X POST http://127.0.0.1:3000/api/lista \
 3. Se quiser uma arte nova, crie `buildNome()` em `scenes.js` e registre no `setScene()`.
 
 ---
+
+## Compartilhar (Wi-Fi e Tailscale)
+
+O servidor escuta em `0.0.0.0:3018`, então responde em todas as interfaces.
+Falta só **liberar a porta no firewall do Windows** — uma vez:
+
+```
+compartilhar.bat      ← duplo clique, aceite o cartel do UAC
+```
+
+ou, num PowerShell **como Administrador**:
+
+```
+netsh advfirewall firewall add rule name="FestaSemNome 3018" dir=in action=allow protocol=TCP localport=3018
+```
+
+Depois, os links para os outros aparelhos:
+
+| Rede | Link | Quem entra |
+|---|---|---|
+| Wi-Fi | `http://192.168.1.12:3018` | qualquer um na mesma rede (IP é DHCP: pode mudar) |
+| Tailscale | `http://100.68.202.114:3018` | só os dispositivos da sua tailnet (`tachyonic.zak@gmail.com`): esta PC, PC-KAZ-MANCUZO, S26 Ultra |
+
+Só nesta máquina: `HOST=127.0.0.1 node server.js`.
+
+## Deploy (link público, sem depender de rede)
+
+O repo já tem tudo. Três caminhos:
+
+**Render (o mais simples)** — render.com → *New* → **Blueprint** → escolha
+`Zakd-D/festa-sem-nome` → *Apply*. O `render.yaml` cria o serviço em Docker,
+no plano free, com health check em `/api/health`.
+
+**Railway / Fly** — leem o `Dockerfile`; o `Procfile` cobre Railway/Heroku.
+
+**Docker em qualquer VPS**
+```
+docker compose up --build -d      # http://localhost:3018
+```
+
+### Aviso importante sobre a lista de convidados
+
+`data/lista.json` é um arquivo local. Em host efêmero (Render free, Railway
+free) ele **some a cada deploy/reinício**. Para guardar de verdade:
+- disco persistente montado em `/app/data` (plano pago), ou
+- trocar o armazenamento por um banco/planilha (Google Sheets, Airtable, Supabase).
 
 ## Conteúdo
 

@@ -16,7 +16,9 @@ const fsp = fs.promises;
 
 const app = express();
 const PORT = process.env.PORT || 3018;   // 3000 lo ocupa Docker Desktop en este equipo
-const HOST = process.env.HOST || '127.0.0.1';
+// 0.0.0.0 = escuta em todas as interfaces (Wi-Fi, Tailscale, contêiner).
+// Para deixar só nesta máquina: HOST=127.0.0.1 node server.js
+const HOST = process.env.HOST || '0.0.0.0';
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
