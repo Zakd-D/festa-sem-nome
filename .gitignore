@@ -11,6 +11,7 @@ data/
 !.env.example
 
 # logs e temporários
+logs/
 *.log
 npm-debug.log*
 Thumbs.db
