@@ -1,0 +1,23 @@
+# dependências
+node_modules/
+
+# dados locais (lista de convidados — não versionar dados pessoais)
+data/lista.json
+data/
+
+# ambiente
+.env
+.env.*
+!.env.example
+
+# logs e temporários
+*.log
+npm-debug.log*
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# editores
+.vscode/
+.idea/
+*.swp
