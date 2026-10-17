@@ -28,8 +28,8 @@ if not exist "node_modules\three\build\three.module.js" (
   call npm install --no-audit --no-fund
 )
 
-echo  abrindo http://127.0.0.1:3000
-start "" cmd /c "timeout /t 2 >nul & start "" http://127.0.0.1:3000"
+echo  abrindo http://127.0.0.1:3018
+start "" cmd /c "timeout /t 2 >nul & start "" http://127.0.0.1:3018"
 
 echo  (ctrl+c para parar o servidor)
 echo.

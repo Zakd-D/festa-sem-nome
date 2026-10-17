@@ -352,6 +352,138 @@ function buildVinyl() {
   };
 }
 
+/* ───────────────────────────────────────────── cena 4 · poster con profundidad */
+
+/**
+ * Poster 2.5D: la imagen generada (ComfyUI) se mueve de verdad.
+ * El mapa de profundidad desplaza los vértices → parallax real al mover el
+ * mouse, más grano, scanlines, deriva lenta y barrido de luz.
+ */
+function buildImagePoster(colorUrl, depthUrl, accent) {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 0, 2.6);
+
+  const uniforms = {
+    uTime: { value: 0 },
+    uColor: { value: null },
+    uDepth: { value: null },
+    uAmp: { value: 0.42 },
+    uTint: { value: new THREE.Color(accent) },
+    uHasDepth: { value: 0 }
+  };
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: /* glsl */ `
+      uniform sampler2D uDepth;
+      uniform float uAmp;
+      uniform float uHasDepth;
+      varying vec2 vUv;
+      varying float vD;
+
+      void main() {
+        vUv = uv;
+        float d = uHasDepth > 0.5 ? texture2D(uDepth, uv).r : 0.5;
+        vD = d;
+        vec3 p = position;
+        // desplazamiento en Z: lo cercano crece, lo lejano se hunde
+        p.z += (d - 0.5) * uAmp;
+        // y una leve expansión hacia la cámara para reforzar el parallax
+        p.xy *= 1.0 + (d - 0.5) * 0.06;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      precision highp float;
+      uniform sampler2D uColor;
+      uniform float uTime;
+      uniform vec3 uTint;
+      varying vec2 vUv;
+      varying float vD;
+
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+      void main() {
+        // deriva lenta: el poster "respira"
+        vec2 drift = vec2(sin(uTime * 0.09) * 0.005, cos(uTime * 0.07) * 0.004);
+        // aberración cromática proporcional a la profundidad (bajita: sin flecos)
+        float ca = 0.0009 + abs(vD - 0.5) * 0.0022;
+        // clamp: nunca muestrear fuera de la imagen (evita franjas de color en los bordes)
+        vec2 uv = clamp(vUv + drift, vec2(0.003), vec2(0.997));
+
+        float r = texture2D(uColor, clamp(uv + vec2(ca, 0.0), vec2(0.003), vec2(0.997))).r;
+        float g = texture2D(uColor, uv).g;
+        float b = texture2D(uColor, clamp(uv - vec2(ca, 0.0), vec2(0.003), vec2(0.997))).b;
+        vec3 col = vec3(r, g, b);
+
+        // barrido de luz
+        float sweep = smoothstep(0.30, 0.0, abs(fract(uTime * 0.06 + 0.2) - uv.y));
+        col += uTint * sweep * 0.05;
+
+        // scanlines
+        float scan = sin(uv.y * 1100.0) * 0.5 + 0.5;
+        col *= 0.96 + scan * 0.04;
+
+        // grano
+        float gr = hash(uv * vec2(1920.0, 2400.0) + uTime * 40.0);
+        col += (gr - 0.5) * 0.055;
+
+        // viñeta
+        vec2 c = vUv - 0.5;
+        col *= 1.0 - 0.42 * smoothstep(0.28, 0.86, length(c));
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `
+  });
+
+  // plano del tamaño del frustum para que cubra el marco entero
+  const segX = 160, segY = 200;
+  const geo = new THREE.PlaneGeometry(1, 1, segX, segY);
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+  scene.background = new THREE.Color('#0a0810');
+
+  const loader = new THREE.TextureLoader();
+  loader.load(colorUrl, (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    uniforms.uColor.value = tex;
+  });
+  if (depthUrl) {
+    loader.load(depthUrl, (tex) => {
+      tex.minFilter = THREE.LinearFilter;
+      tex.generateMipmaps = false;
+      uniforms.uDepth.value = tex;
+      uniforms.uHasDepth.value = 1;
+    });
+  }
+
+  function fit(w, h) {
+    const aspect = w / h;
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+    const vh = 2 * Math.tan((camera.fov * Math.PI) / 360) * camera.position.z;
+    const vw = vh * aspect;
+    // un poco más grande que el frustum para que el desplazamiento no deje bordes
+    mesh.scale.set(vw * 1.06, vh * 1.06, 1);
+  }
+
+  return {
+    scene,
+    camera,
+    isPoster: true,
+    update(t, w, h) {
+      uniforms.uTime.value = t;
+      if (w && h) fit(w, h);
+      // micro-oscilación del propio plano
+      mesh.rotation.z = Math.sin(t * 0.05) * 0.004;
+    }
+  };
+}
+
 /* ───────────────────────────────────────────── poster */
 
 export class Poster {
@@ -412,11 +544,12 @@ export class Poster {
     c.addEventListener('mouseleave', () => { this.drag.active = false; });
   }
 
-  setScene(key, accent = '#7b5cff') {
+  setScene(key, accent = '#7b5cff', poster = null) {
     if (key === this.key) return;
     this.key = key;
     if (!this.built[key]) {
-      if (key === 'analogic') this.built[key] = buildAnalogic();
+      if (poster && poster.color) this.built[key] = buildImagePoster(poster.color, poster.depth, accent);
+      else if (key === 'analogic') this.built[key] = buildAnalogic();
       else if (key === 'vinyl') this.built[key] = buildVinyl();
       else this.built[key] = buildRawmorphic(accent);
       if (!this.current) {

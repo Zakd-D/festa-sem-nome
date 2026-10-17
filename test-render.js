@@ -7,7 +7,7 @@ const path = require('path');
 
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const OUT = path.join(__dirname, 'shots');
-const URL = 'http://127.0.0.1:3000';
+const URL = 'http://127.0.0.1:3018';
 
 (async () => {
   const fs = require('fs');

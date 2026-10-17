@@ -46,8 +46,10 @@ festa-sem-nome/
 ```bash
 npm install
 npm start
-# http://127.0.0.1:3000
+# http://127.0.0.1:3018
 ```
+
+> El puerto por defecto es **3018** (en este equipo Docker Desktop ya ocupa el 3000).
 
 Outra porta:
 
@@ -60,11 +62,28 @@ PORT=4000 node server.js               # bash
 
 ## Edições (posters 3D)
 
-| # | Evento | Data | Cena 3D | Paleta |
+| # | Evento | Data | Arte | Paleta |
 |---|---|---|---|---|
-| 01 | **RAWMORPHIC** | 18 nov 2026 | massa metálica em morph contínuo (noise 4 octavas) | violeta / azul |
-| 02 | **ANALOGIC SAMB** | 18 dez 2026 | dois carretéis de fita, grão, varredura, aberração cromática | âmbar / rosa |
-| 03 | **PRO VYNIL TECHNO** | 31 dez 2026 (New Year) | vinil girando, sulcos, reflexo radial, braço de luz | lavanda |
+| 01 | **RAWMORPHIC** | 18 nov 2026 | three.js: massa metálica em morph contínuo (noise 4 octavas) | violeta / azul |
+| 02 | **ANALOGIC SAMB** | 18 dez 2026 | ComfyUI (Z-Image) + mapa de profundidade → parallax 2.5D | âmbar / óxido |
+| 03 | **PRO VYNIL TECHNO** | 31 dez 2026 (New Year) | ComfyUI (Z-Image) + mapa de profundidade → parallax 2.5D | lavanda / violeta |
+
+### Pipeline dos pôsteres com profundidade
+
+```
+tools/gen_poster.py <slug> "<prompt>" [w] [h] [seed]   → ComfyUI (local, :8188)
+      ↓  PNG em public/assets/posters/<slug>.png  +  metadados em data/posters/<slug>.json
+tools/depth_map.py <slug>                              → <slug>-depth.png (parallax)  +  <slug>-normal.png (relevo)
+      ↓
+public/js/scenes.js → buildImagePoster()               → shader: parallax por vértice + grão + scanlines + deriva
+```
+
+O mapa de profundidade é **derivado localmente** (luminância + desfoque guiado + viés
+radial), porque não há nós de estimativa de profundidade instalados no ComfyUI —
+é uma aproximação honesta, não um depth real de ControlNet.
+
+Referência de estilo e metadados do artista: `data/references-neosdl.json`
+(extraído de `https://neosdl-work.com/gallery` com `tools/extract_refs.py`).
 
 Cada poster é só uma imagem: **sem nome dentro da arte**. O nome, a data e a
 descrição misteriosa aparecem na interface, ao lado/abaixo.

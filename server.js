@@ -15,7 +15,7 @@ const fs = require('fs');
 const fsp = fs.promises;
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3018;   // 3000 lo ocupa Docker Desktop en este equipo
 const HOST = process.env.HOST || '127.0.0.1';
 
 const ROOT = __dirname;
@@ -78,7 +78,12 @@ const EVENTS = [
     id: 'analogic-samb',
     title: 'ANALOGIC SAMB',
     subtitle: 'Edição 02',
-    scene: 'analogic',
+    scene: 'poster-analogic-samb',
+    poster: {
+      color: '/assets/posters/analogic-samb.png',
+      depth: '/assets/posters/analogic-samb-depth.png',
+      generated: 'ComfyUI · Z-Image turbo'
+    },
     isoDate: '2026-12-18T18:00:00-03:00',
     dateLabel: 'Sex, 18 de dezembro de 2026',
     timeLabel: '18h às 3h',
@@ -100,7 +105,12 @@ const EVENTS = [
     id: 'pro-vynil-techno',
     title: 'PRO VYNIL TECHNO',
     subtitle: 'Edição 03 · New Year',
-    scene: 'vinyl',
+    scene: 'poster-pro-vynil-techno',
+    poster: {
+      color: '/assets/posters/pro-vynil-techno.png',
+      depth: '/assets/posters/pro-vynil-techno-depth.png',
+      generated: 'ComfyUI · Z-Image turbo'
+    },
     isoDate: '2026-12-31T22:00:00-03:00',
     dateLabel: 'Qui, 31 de dezembro de 2026',
     timeLabel: '22h às 6h',

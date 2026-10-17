@@ -107,7 +107,7 @@ function applyEvent(ev) {
   if (els.listaEvento) els.listaEvento.value = ev.id;
   if (els.ticketsSub) els.ticketsSub.textContent = `${ev.title} · ${ev.dateLabel} · lotes pelo Shotgun. Sem lista, sujeito à lotação.`;
 
-  if (poster) poster.setScene(ev.scene, ev.accent);
+  if (poster) poster.setScene(ev.scene, ev.accent, ev.poster || null);
 }
 
 function selectEvent(id, pushHash = false) {
